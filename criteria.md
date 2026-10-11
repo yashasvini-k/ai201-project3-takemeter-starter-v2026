@@ -54,11 +54,11 @@ whether you hit them:
 ## 1.
 
 <!-- Your criterion. It must name a number. -->
-
+Overall accuracy must be at least 0.60 across all three seeds on the held-out test set.
 
 
 **Why this target:**
-
+With three labels, random guessing gets about 0.33 accuracy. A target of 0.60 requires the classifier to learn meaningful patterns, while recognizing that Reddit posts can overlap between sourced information, personal opinions, and detailed analysis.
 
 
 ---
@@ -66,11 +66,11 @@ whether you hit them:
 ## 2.
 
 <!-- Your criterion. -->
-
+The F1 score for each label must be at least 0.45 across all three seeds.
 
 
 **Why this target:**
-
+The three labels can overlap, especially when a sourced post also includes analysis. A 0.45 minimum helps prevent the classifier from performing well overall while consistently missing one category, without setting an unrealistic target for a small label.
 
 
 ---
@@ -78,11 +78,11 @@ whether you hit them:
 ## 3.
 
 <!-- Your criterion. -->
-
+No single label may account for more than 60% of the labeled dataset.
 
 
 **Why this target:**
-
+If one category dominates the dataset, the classifier could favor that category and still achieve a seemingly reasonable accuracy. Keeping the labels reasonably balanced makes performance comparisons more meaningful.
 
 
 ---
@@ -90,11 +90,11 @@ whether you hit them:
 ## 4.
 
 <!-- Your criterion. -->
-
+When I independently label a second sample of 30 posts, my labels must agree with my first labels on at least 27 out of 30 posts (90%).
 
 
 **Why this target:**
-
+Some posts combine links, personal opinions, and detailed analysis, so the decision rules must be clear enough to apply consistently. Reaching 90% agreement would suggest that the taxonomy is understandable and repeatable.
 
 
 ---
@@ -102,11 +102,11 @@ whether you hit them:
 ## 5.
 
 <!-- Your criterion. -->
-
+Among predictions made with at least 0.80 confidence, at least 75% must be correct, with at least 20 such predictions evaluated.
 
 
 **Why this target:**
-
+A high-confidence prediction should be more reliable than a guess, particularly for posts that clearly fit one label. Requiring at least 20 predictions prevents a very small sample from making the confidence score look more reliable than it is.
 
 
 ---
