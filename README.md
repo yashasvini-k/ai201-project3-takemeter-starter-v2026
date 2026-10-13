@@ -42,7 +42,7 @@
 <!-- Your community, and what your classifier sorts posts into. Three or four
      sentences. -->
 
-
+TakeMeter is a text-classification project using posts from the Reddit community r/artificial. The dataset contains 200 posts about AI and technology. The classifier sorts each post into one of three categories: sourced_information, personal_opinion, or unsupported_claim. The project explores whether a text-classification model can learn these distinctions from labeled examples and how well it performs on posts held out from training.
 
 ---
 
@@ -54,36 +54,44 @@
      The decision rule is worth a point on its own and it's the thing most
      people leave out. Every taxonomy has a hardest boundary. Name yours. -->
 
-### `label_one`
+### `label_one` sourced_information
 
-**Definition:**
-
-**Example 1:**
->
-
-**Example 2:**
->
-
-### `label_two`
-
-**Definition:**
+**Definition:** Primarily reports information attributed to an external source, such as a linked article, research paper, or cited report.
 
 **Example 1:**
->
+> “I analyzed the 2025 acquisition landscape and was surprised by how manufacturing dominates the M&A market.” The post describes a methodology based on acquisition announcements and sector classifications.
 
 **Example 2:**
->
+> “The first C-SPAN stream is scheduled to start at 9:31 a.m. Eastern ...” The post provides specific event information and includes a news-and-primary-sources section.
+
+### `label_two` personal_opinion
+
+**Definition:** Primarily expresses the author's personal experience, opinion, preference, or prediction.
+
+**Example 1:**
+> “Having a mental blank, there was a company recently ... that had a disastrous software update ... Anyone have any idea what I might be thinking of?”
+
+**Example 2:**
+> “3 of us started a company together, we're friends. CEO had the idea ... and they approached me to be the CTO and build up the app.”
+
+### `label_three` unsupported_claim
+
+**Definition:** Primarily makes a broad factual claim without a cited source or specific supporting evidence.
+
+**Example 1:**
+>  “I’m a Social Media Manager looking for clients and i have already worked with few pages.” The post promotes services but does not provide evidence for its performance claims.
+
+**Example 2:**
+> “We help businesses transform complex ideas into simple, user-friendly, and high-converting digital experiences.” The promotional claim is not supported by specific evidence in the excerpt.
 
 ### The hardest boundary
 
-**Which two labels:**
+**Which two labels:** sourced_information and unsupported_claim
 
 **The decision rule I used every time:**
 <!-- e.g. "If the post names a specific checkable fact, it's `analysis`, even
      if the tone is heated." -->
-
-
-
+If a post reports information and gives a specific, identifiable source or describes a checkable methodology, use sourced_information. If it makes a factual or promotional claim without identifiable evidence, use unsupported_claim. If its main purpose is to share a personal experience or viewpoint, use personal_opinion.
 ---
 
 ## The Dataset
@@ -91,19 +99,24 @@
 <!-- Where you collected from, how you labelled, your counts, and three hard
      cases. -->
 
-**Where the posts came from:**
+**Where the posts came from:** The Reddit community r/artificial. The project uses a dataset of AI- and technology-related posts saved in gold_reddit_raw.csv, with the labeled dataset stored in labels.csv.
 
 **How I labelled them:** <!-- Cold first? Pre-labelled with AI and corrected?
 Say so plainly — the disclosure is required, not penalised. -->
+I used batch scripts to assign labels and explanatory notes to the 200 posts. The notes describe each post's main purpose or the reason for its assigned category. The current files do not establish that the first 20 posts were independently labeled as cold examples or that the remaining posts were AI-pre-labeled and individually corrected. I have therefore not claimed either workflow without verification.
+
+
 
 **Counts per label:**
 
 | Label | Count | Share |
 |---|---|---|
-|  |  |  |
-|  |  |  |
-|  |  |  |
-| **Total** |  | 100% |
+| sourced_information | 34 | 17.0% |
+| personal_opinion | 139 | 69.5% |
+| unsupported_claim | 27 | 13.5% |
+| **Total** | 200 | 100% |
+
+
 
 **Three hard cases**
 
@@ -111,25 +124,25 @@ Say so plainly — the disclosure is required, not penalised. -->
      been, and what you chose. These are worth more than the easy 190. -->
 
 **1.**
-> *The post:*
->
+> *The post:* Startup equity discussion
+> The author describes a real business arrangement but also shares a personal perspective about equity distribution. 
 > *Could have been:*
->
-> *I chose, because:*
+> The competing labels are personal_opinion and sourced_information.
+> *I chose, because:* the post's main purpose is to discuss the author's experience and seek advice.
 
 **2.**
-> *The post:*
->
+> *The post:* Manufacturing and M&A trend
+> The author claims manufacturing dominates acquisition activity and describes a methodology. 
 > *Could have been:*
->
-> *I chose, because:*
+> The competing labels are sourced_information and unsupported_claim.
+> *I chose, because:* sourced_information if the full post identifies supporting sources or sufficiently specific, checkable evidence; otherwise, I would choose unsupported_claim.
 
 **3.**
-> *The post:*
->
+> *The post:* Agency marketing post
+> The agency claims it delivers “high-converting digital experiences” and helps businesses “drive growth.”
 > *Could have been:*
->
-> *I chose, because:*
+> The competing labels are unsupported_claim and personal_opinion.
+> *I chose, because:* unsupported_claim because these are promotional performance claims without supporting evidence in the excerpt.
 
 ---
 
@@ -137,16 +150,22 @@ Say so plainly — the disclosure is required, not penalised. -->
 
 <!-- Your starting model, your settings, and anything you changed and why. -->
 
-**Base model:**
-
-**Settings:** <!-- epochs, learning rate, batch size, seed -->
+**Base model:** distilbert-base-uncased
+ 
+**Settings:** <!-- epochs, learning rate, batch size, seed --> 
+EPOCHS = 3
+LEARNING_RATE = 2e-5
+BATCH_SIZE = 16
+SEED = 42
 
 **Anything I changed from the defaults, and why:**
 
 **Split sizes:** <!-- train / val / test, and per-label counts in the test
 split. If a label had fewer than about 8 in test, say so — it explains a lot
 of next unit's variance. -->
-
+train 139  
+val 31  
+test 30
 
 
 ---
@@ -162,17 +181,17 @@ of next unit's variance. -->
 
 **Moment 1**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:* Help troubleshooting the Python scripts and checking the labeled dataset for missing values, duplicates, and label counts.
+- *What came back:* Suggested commands for inspecting the CSV files and verifying the dataset.
+- *What I changed:* I ran the checks in my local environment and used the outputs to confirm that the dataset contained 200 rows and to identify the label distribution.
 
 **Moment 2**
 
-- *What I asked for:*
-- *What came back:*
-- *What I changed:*
+- *What I asked for:*  Help interpreting the initial model evaluation and understanding why accuracy and per-label F1 scores differed.
+- *What came back:* An explanation of the confusion matrix and the fact that the model predicted every test post as personal_opinion.
+- *What I changed:* I documented the observed results and identified the need to investigate the label definitions and evaluation setup rather than assuming the accuracy score demonstrated good performance.
 
-**Pre-labelling disclosure:**
+**Pre-labelling disclosure:** The available batch scripts assign labels and notes directly, but the current files do not establish whether an AI model pre-labeled the posts. I have not claimed that AI pre-labeling occurred. If AI was used to suggest individual labels before they were reviewed, that workflow should be disclosed accurately here.
 
 <!-- ═══════════════════════ UNIT 6 — THE TEST ═══════════════════════
 
