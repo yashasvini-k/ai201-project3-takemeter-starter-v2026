@@ -205,22 +205,25 @@ test 30
 <!-- Both models on the same posts. `python baseline.py --trained results.json`
      prints this table for you. -->
 
-| Measure | Baseline | Trained | Difference |
-|---|---|---|---|
-| Overall accuracy |  |  |  |
-| Macro F1 |  |  |  |
-| F1 — `label_one` |  |  |  |
-| F1 — `label_two` |  |  |  |
+| Measure                  | Baseline | Trained | Difference |
+|--------------------------|----------|---------|------------|
+| Overall accuracy         | 0.333    | 0.700   | +0.367     |
+| Macro F1                 | 0.310    | 0.275   | -0.035     |
+| F1 — personal_opinion    | 0.414    | 0.824   | +0.410     |
+| F1 — sourced_information | 0.267    | 0.000   | -0.267     |
+| F1 — unsupported_claim   | 0.250    | 0.000   | -0.250     |
 
 **What I predicted before I looked:**
 <!-- Milestone 1 asks you to write this BEFORE seeing the trained numbers. A
      prediction made afterwards isn't one. -->
 
+I did not record a prediction before viewing the trained-model results, so I cannot honestly present a retrospective prediction as a prior one.
+
 **What the gap actually means:**
 <!-- If the baseline matched your trained model, your fine-tuning added
      nothing — and that is a real finding, not a failure. Say it plainly. -->
 
-
+The trained model's accuracy increased from 0.333 to 0.700, but its macro F1 decreased from 0.310 to 0.275. It predicted `personal_opinion` for all 30 test posts. It identified the majority class but failed to identify `sourced_information` and `unsupported_claim`. The accuracy increase therefore did not indicate balanced performance across all three labels.
 
 ---
 
@@ -230,30 +233,30 @@ test 30
      spread table; the Target and Verdict columns are yours. -->
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
-|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+|-----------|--------|---------|--------|-----------|---------|
+| 1. Overall accuracy | >= 0.60 for all seeds | 0.700 | 0.700 | 0.700 | Meets saved results; verify independent runs |
+| 2. F1 for every label | >= 0.45 for all seeds | 0.000 for two labels | 0.000 for two labels | 0.000 for two labels | Missed |
+| 3. Label balance | No label above 60% | 69.5% personal_opinion | 69.5% personal_opinion | 69.5% personal_opinion | Missed |
+| 4. Second-labeling agreement | >= 27/30 agree | Not measured | Not measured | Not measured | Not yet measured |
+| 5. High-confidence accuracy | >= 75% correct at confidence >= 0.80, with >= 20 evaluated | Not verified | Not verified | Not verified | Not yet measured |
 
 ### Confusion matrix
 
 <!-- ⚠️ TYPED AS A MARKDOWN TABLE. The notebook prints one ready to paste.
      An image of a matrix earns nothing. -->
 
-| true \ predicted |  |  |  |
-|---|---|---|---|
-| **** |  |  |  |
-| **** |  |  |  |
-| **** |  |  |  |
+| true \ predicted        | sourced_information | personal_opinion | unsupported_claim |
+|-------------------------|---------------------|------------------|-------------------|
+| **sourced_information** | 0                   | 5                | 0                 |
+| **personal_opinion**    | 0                   | 21               | 0                 |
+| **unsupported_claim**   | 0                   | 4                | 0                 |
 
 **My biggest off-diagonal number, and what it means:**
 <!-- Not "the model made mistakes" — WHICH boundary it didn't learn, and which
      direction. "7 real analysis posts were called hot_take and only 3 went the
      other way" is a direction, not just an error rate. -->
 
-
+The largest off-diagonal count is 5: all five posts labeled sourced_information were predicted as personal_opinion. The model also predicted personal_opinion for all four unsupported_claim posts. It therefore failed to distinguish the other two categories from the majority class. Although accuracy was 0.700, the model's macro F1 was only 0.275, showing poor performance across all three labels.
 
 ---
 
@@ -262,13 +265,13 @@ test 30
 <!-- MET or MISSED against LAST UNIT's target. The target has to hold across
      all three seeds, not turn up sometimes. -->
 
-| # | Criterion | Target | Verdict | How I decided |
-|---|---|---|---|---|
-| 1 |  |  |  |  |
-| 2 |  |  |  |  |
-| 3 |  |  |  |  |
-| 4 |  |  |  |  |
-| 5 |  |  |  |  |
+| # | Criterion                      | Target | Verdict | How I decided |
+|---|--------------------------------|--------|---------|---------------|
+| 1 | Overall accuracy               | >= 0.60 for all three seeds | Meets saved results; verify independent runs | All three saved entries report 0.700 accuracy, but their identical metrics need verification. |
+| 2 | Per-label F1                   | >= 0.45 for every label across all seeds | MISSED | The saved results show F1 of 0.000 for sourced_information and unsupported_claim. |
+| 3 | Label balance                  | No label above 60% | MISSED | personal_opinion makes up 69.5% of the 200 labeled posts. |
+| 4 | Independent labeling agreement | At least 27/30 matches | NOT YET MEASURED | No completed agreement score has been verified. |
+| 5 | High-confidence accuracy       | At least 75% correct at confidence >= 0.80, with at least 20 examples | NOT YET MEASURED | The available summary does not establish the required number of predictions at that confidence threshold. |
 
 **Diagnoses**
 
@@ -281,7 +284,9 @@ test 30
      have that can tell a LABELLING problem from a MODEL problem, and this
      section is graded on whether you used it that way. -->
 
+The clearest problem is that the model predicts personal_opinion for every test post. This explains its zero F1 scores for sourced_information and unsupported_claim. The model may be favoring the majority class, but the evaluation alone cannot establish whether the underlying cause is limited training data, inconsistent labels, overlapping definitions, or a model limitation.
 
+The dataset is also imbalanced: 69.5% of its labels are personal_opinion, exceeding the 60% target. An independent agreement review is still needed to help determine whether labeling inconsistencies contribute to the model's poor performance.
 
 ---
 
@@ -292,6 +297,8 @@ test 30
      Remember you labelled these 30 under the STAFF taxonomy in
      data/staff_taxonomy.md, not your own — so every argument below is made
      from those definitions and those decision rules. -->
+
+The agreement script compared my labels against the staff reference labels for all 30 posts. It reported 30 agreements, 0 disagreements, and 100% agreement.
 
 **Agreement rate:** ___ / 30 = ___%
 
@@ -343,24 +350,29 @@ test 30
 
 **What I changed:**
 
+I changed the training loss to use class weights calculated from the training-set label frequencies. This gave less frequent labels more weight during training, addressing the concern that the original model was predicting only the majority class, `personal_opinion`.
+
 **Which diagnosis pointed at it:**
+
+The before-results showed that all 30 test posts were predicted as `personal_opinion`, resulting in zero F1 for `sourced_information` and `unsupported_claim`. The label distribution was also imbalanced: 69.5% of the 200 labeled posts were `personal_opinion`. Class-weighted training was an attempt to reduce the model's majority-class bias.
 
 ### Run Log — After
 
 | Criterion | Target | Seed 42 | Seed 7 | Seed 2024 | Verdict |
-|---|---|---|---|---|---|
-| 1.  |  |  |  |  |  |
-| 2.  |  |  |  |  |  |
-| 3.  |  |  |  |  |  |
-| 4.  |  |  |  |  |  |
-| 5.  |  |  |  |  |  |
+|---|---|---:|---:|---:|---|
+| 1. Overall accuracy | >= 0.60 for all seeds | 0.733 | 0.600 | 0.200 | MISSED |
+| 2. F1 for every label | >= 0.45 for every label across all seeds | 0.444 minimum | 0.000 minimum | 0.000 minimum | MISSED |
+| 3. Label balance | No label above 60% | 69.5% personal_opinion | 69.5% personal_opinion | 69.5% personal_opinion | MISSED |
+| 4. Independent labeling agreement | At least 27/30 matches | Not measured | Not measured | Not measured | NOT YET MEASURED |
+| 5. High-confidence accuracy | >= 75% correct at confidence >= 0.80, with at least 20 examples | Not verified | Not verified | Not verified | NOT YET VERIFIED |
+
 
 **Did it help, and how do I know:**
 
 <!-- If it didn't, say so. Relabelling that didn't help is a genuinely
      interesting result and earns full credit. -->
 
-
+The results were mixed. Average accuracy decreased from 0.700 before the change to approximately 0.511 across the three after-runs. Average macro F1 increased from approximately 0.275 to 0.402. Seed 42 improved substantially, with accuracy of 0.733 and macro F1 of 0.605, while seed 7 had macro F1 of 0.375 and seed 2024 had macro F1 of 0.225. The change improved average macro F1 but did not reliably improve performance across seeds. The results suggest that class weighting alone is insufficient; more consistent labels, clearer label boundaries, and further evaluation are needed.
 
 ---
 
@@ -368,13 +380,17 @@ test 30
 
 <!-- For each criterion still missed: what you'd do, and why you stopped. -->
 
+The accuracy target was not met across all three seeds after class weighting: seed 2024 reached only 0.200 accuracy. The per-label F1 target also failed because some labels had F1 below 0.45, including zero F1 for `unsupported_claim` in seed 7 and zero F1 for `personal_opinion` in seed 2024. I would next review mislabeled or ambiguous examples, improve the consistency of the label definitions, and test another training configuration. I would not claim the model is reliable until the results improve consistently across seeds.
 
+The label-balance target remains unmet because `personal_opinion` accounts for 69.5% of the dataset. I would collect and manually review additional examples for the two less frequent labels rather than changing labels just to force a balanced distribution.
+
+The independent labeling-agreement and high-confidence criteria are not yet verified. I need a valid independent labeling comparison to calculate agreement, and I need to count predictions with confidence of at least 0.80 and evaluate their correctness. I have not treated either criterion as passed without those measurements.
 
 **The gap between what I meant my labels to capture and what the model
 learned:**
 <!-- Two sentences. Your confusion matrix is the evidence. -->
 
-
+Before class weighting, the model predicted `personal_opinion` for every test post, even when the correct label was `sourced_information` or `unsupported_claim`. After class weighting, its performance varied considerably by seed, suggesting that it has not yet learned stable boundaries between all three categories.
 
 <!-- ═════════════════════════════════════════════════════════════════════
 
